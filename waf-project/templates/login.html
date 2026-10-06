@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Login Portal - Protected by WAF</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-light text-dark min-vh-100 d-flex flex-column">
+
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-navy sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                <i class="bi bi-shield-check text-info fs-4"></i>
+                <span class="fw-bold text-white">SecurCorp <span class="badge bg-secondary text-light fw-normal fs-6">Behind WAF</span></span>
+            </a>
+            <div class="d-flex gap-2">
+                <a href="/" class="btn btn-outline-light btn-sm">Home</a>
+                <a href="/admin" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-auto py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+
+                {% if success %}
+                <div class="alert alert-success d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill fs-5"></i>
+                    <div>{{ success }}</div>
+                </div>
+                {% endif %}
+
+                {% if error %}
+                <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <div>{{ error }}</div>
+                </div>
+                {% endif %}
+
+                <div class="card bg-white border shadow-sm rounded-3 overflow-hidden">
+                    <div class="card-header bg-slate-50 border-bottom py-3 text-center">
+                        <i class="bi bi-person-lock text-primary fs-1"></i>
+                        <h5 class="fw-bold mt-2 mb-0 text-dark">Protected User Authentication</h5>
+                        <small class="text-secondary font-monospace" style="font-size: 0.72rem;">INSPECTED BY RULE-BASED WAF ENGINE</small>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <form action="/login" method="POST" id="loginForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label text-secondary small">Username / Account ID</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-person"></i></span>
+                                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="password" class="form-label text-secondary small">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-key"></i></span>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" style="background-color: #0b192c; border-color: #0b192c;">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Authenticate
+                            </button>
+                        </form>
+
+                        <!-- Academic Viva Helper Controls -->
+                        <div class="mt-4 pt-3 border-top">
+                            <span class="badge bg-secondary text-white mb-2 font-monospace">QUICK TEST PRESETS</span>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-success btn-sm text-start" onclick="fillCredentials('admin', 'SecurPass2026!')">
+                                    <i class="bi bi-check2-circle me-1"></i> Preset 1: Normal Login (Clean Request &rarr; ALLOWED)
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm text-start" onclick="fillCredentials(&quot;admin' OR '1'='1&quot;, &quot;randompass&quot;)">
+                                    <i class="bi bi-shield-x me-1"></i> Preset 2: SQLi Tautology (admin' OR '1'='1 &rarr; BLOCKED)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-3 text-secondary small">
+                    <i class="bi bi-shield-fill-check text-success me-1"></i> Inbound requests are inspected before reaching the authentication logic.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function fillCredentials(u, p) {
+            document.getElementById('username').value = u;
+            document.getElementById('password').value = p;
+        }
+    </script>
+</body>
+</html>

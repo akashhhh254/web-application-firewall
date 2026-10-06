@@ -1,0 +1,68 @@
+/* ==========================================================================
+   Web Application Firewall (WAF) - White & Navy Blue Theme Stylesheet
+   Clean enterprise aesthetic: Crisp white cards, rich navy blue accents.
+   ========================================================================== */
+
+:root {
+    --bg-light: #f8fafc;
+    --navy-primary: #0b192c;
+    --navy-secondary: #1e3e62;
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-muted: #64748b;
+    --accent-blue: #0284c7;
+    --accent-red: #e11d48;
+    --accent-green: #059669;
+    --accent-amber: #d97706;
+}
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: -0.01em;
+}
+
+/* Navbar */
+.navbar-navy {
+    background-color: var(--navy-primary) !important;
+    border-bottom: 1px solid var(--navy-secondary);
+}
+
+/* Card aesthetics */
+.card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+}
+
+/* Monospace text */
+code, pre, .font-monospace {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* Badges */
+.badge {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* Form inputs */
+.form-control:focus, .form-select:focus {
+    background-color: #ffffff !important;
+    border-color: var(--navy-secondary) !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 0 0 0.15rem rgba(30, 62, 98, 0.2) !important;
+}
+
+/* Table styling */
+.table {
+    --bs-table-bg: #ffffff;
+    --bs-table-border-color: #e2e8f0;
+    color: var(--text-primary);
+}
+
+.table-hover > tbody > tr:hover > * {
+    --bs-table-accent-bg: #f1f5f9;
+}

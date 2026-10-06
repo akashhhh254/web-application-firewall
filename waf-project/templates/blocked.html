@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 Forbidden - Request Blocked by WAF</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-light text-dark d-flex align-items-center min-vh-100 py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card border-danger shadow-sm bg-white text-dark rounded-3 overflow-hidden">
+                    <div class="card-header bg-danger bg-opacity-10 border-bottom border-danger py-3 px-4 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-slash-fill text-danger fs-4"></i>
+                            <div>
+                                <h5 class="mb-0 text-danger fw-bold">403 FORBIDDEN &mdash; REQUEST BLOCKED</h5>
+                                <small class="text-secondary font-monospace" style="font-size: 0.75rem;">Web Application Firewall Threat Interceptor</small>
+                            </div>
+                        </div>
+                        <span class="badge bg-danger px-2.5 py-1.5 text-uppercase font-monospace">BLOCKED</span>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5">
+                        <div class="alert alert-danger bg-danger bg-opacity-10 border-danger text-dark mb-4">
+                            <div class="d-flex align-items-start gap-3">
+                                <i class="bi bi-exclamation-octagon-fill text-danger fs-3 mt-1"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-danger">Security Policy Violation Detected</h6>
+                                    <p class="mb-0 text-secondary small">
+                                        Your HTTP request contained anomalous syntax matching a recognized attack pattern. The WAF rule engine has terminated processing to safeguard the server and database integrity.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Incident Details Table -->
+                        <div class="table-responsive rounded border mb-4">
+                            <table class="table table-hover mb-0 font-monospace small">
+                                <tbody>
+                                    <tr>
+                                        <th class="text-secondary w-25">Incident ID:</th>
+                                        <td class="text-primary fw-bold">#INC-{{ incident_id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-secondary">Attack Type:</th>
+                                        <td>
+                                            <span class="badge bg-danger text-white px-2 py-1">
+                                                {{ attack_type }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-secondary">Assessed Risk:</th>
+                                        <td>
+                                            {% if risk_level == 'CRITICAL' %}
+                                                <span class="badge bg-danger">{{ risk_level }}</span>
+                                            {% elif risk_level == 'HIGH' %}
+                                                <span class="badge bg-warning text-dark">{{ risk_level }}</span>
+                                            {% else %}
+                                                <span class="badge bg-info text-dark">{{ risk_level }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-secondary">Triggered Rule:</th>
+                                        <td class="text-dark fw-semibold">
+                                            [{{ rule_id }}] {{ rule_name }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-secondary">Violation Reason:</th>
+                                        <td class="text-secondary">{{ reason }}</td>
+                                    </tr>
+                                    {% if offending_snippet %}
+                                    <tr>
+                                        <th class="text-secondary">Flagged Token:</th>
+                                        <td>
+                                            <code class="text-danger bg-light px-2 py-1 rounded border border-danger border-opacity-25">{{ offending_snippet }}</code>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <th class="text-secondary">Client IP:</th>
+                                        <td class="text-secondary">{{ ip_address }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-secondary">Timestamp:</th>
+                                        <td class="text-secondary">{{ timestamp }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Footer Actions -->
+                        <div class="border-top pt-4 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                            <div class="text-secondary small">
+                                <i class="bi bi-info-circle me-1"></i> Recorded in SQLite security audit database.
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="/" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-arrow-left me-1"></i> Return Home
+                                </a>
+                                <a href="/admin" class="btn btn-primary btn-sm" style="background-color: #0b192c; border-color: #0b192c;">
+                                    <i class="bi bi-speedometer2 me-1"></i> Inspect in Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

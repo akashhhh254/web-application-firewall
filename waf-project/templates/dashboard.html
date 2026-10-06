@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAF SOC Dashboard &bull; Threat Detection Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-light text-dark min-vh-100 d-flex flex-column">
+
+    <!-- Top Admin Header -->
+    <header class="navbar navbar-dark navbar-navy px-3 px-md-4 py-2 sticky-top shadow-sm">
+        <div class="d-flex align-items-center gap-2 gap-md-3">
+            <a href="/admin" class="text-decoration-none text-white d-flex align-items-center gap-2">
+                <i class="bi bi-shield-lock-fill text-info fs-4"></i>
+                <div class="lh-1">
+                    <span class="fs-6 fw-bold font-monospace text-white">WEB APPLICATION FIREWALL</span>
+                    <small class="d-block text-white-50 font-monospace" style="font-size: 0.70rem;">L7 THREAT DETECTION &bull; LOCAL SOC</small>
+                </div>
+            </a>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2 gap-md-3">
+            <span class="badge bg-success px-2.5 py-1.5 font-monospace">
+                <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> ENGINE ACTIVE
+            </span>
+            <a href="/" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Visit App
+            </a>
+        </div>
+    </header>
+
+    <div class="container-fluid px-3 px-md-4 py-4 flex-grow-1">
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs border-bottom mb-4 flex-nowrap overflow-x-auto pb-1" id="socTabs" role="tablist">
+            <li class="nav-item text-nowrap">
+                <a class="nav-link {{ 'active fw-bold text-primary border-primary border-bottom-0' if active_tab == 'overview' else 'text-secondary' }}" href="/admin">
+                    <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item text-nowrap">
+                <a class="nav-link {{ 'active fw-bold text-primary border-primary border-bottom-0' if active_tab == 'logs' else 'text-secondary' }}" href="/admin/logs">
+                    <i class="bi bi-journal-text me-1"></i> Security Logs ({{ stats.total_requests }})
+                </a>
+            </li>
+            <li class="nav-item text-nowrap">
+                <a class="nav-link {{ 'active fw-bold text-primary border-primary border-bottom-0' if active_tab == 'rules' else 'text-secondary' }}" href="/admin/rules">
+                    <i class="bi bi-sliders me-1"></i> Rules ({{ rules|length }})
+                </a>
+            </li>
+            <li class="nav-item text-nowrap">
+                <a class="nav-link {{ 'active fw-bold text-primary border-primary border-bottom-0' if active_tab == 'testing' else 'text-secondary' }}" href="/admin/testing">
+                    <i class="bi bi-terminal me-1"></i> Testing
+                </a>
+            </li>
+            <li class="nav-item text-nowrap">
+                <a class="nav-link {{ 'active fw-bold text-primary border-primary border-bottom-0' if active_tab == 'settings' else 'text-secondary' }}" href="/admin/settings">
+                    <i class="bi bi-gear me-1"></i> Settings
+                </a>
+            </li>
+        </ul>
+
+        {% if active_tab == 'overview' or not active_tab %}
+        <!-- =================================================================== -->
+        <!-- TAB 1: OVERVIEW & TELEMETRY -->
+        <!-- =================================================================== -->
+
+        <!-- KPI Metrics Grid -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-white border p-3 rounded-3 h-100 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="text-secondary small font-monospace text-uppercase">Total Requests</span>
+                            <h2 class="fw-bold my-1 text-dark font-monospace">{{ stats.total_requests }}</h2>
+                            <small class="text-muted">All inspected HTTP traffic</small>
+                        </div>
+                        <span class="badge bg-light text-secondary p-2 border"><i class="bi bi-arrow-down-up fs-4"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-white border p-3 rounded-3 h-100 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="text-secondary small font-monospace text-uppercase">Allowed Clean</span>
+                            <h2 class="fw-bold my-1 text-success font-monospace">{{ stats.allowed_requests }}</h2>
+                            <small class="text-success">Passed all rule filters</small>
+                        </div>
+                        <span class="badge bg-success bg-opacity-10 text-success p-2 border border-success border-opacity-25"><i class="bi bi-shield-check fs-4"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-white border p-3 rounded-3 h-100 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="text-secondary small font-monospace text-uppercase">Blocked Attacks</span>
+                            <h2 class="fw-bold my-1 text-danger font-monospace">{{ stats.blocked_requests }}</h2>
+                            <small class="text-danger">Terminated with HTTP 403</small>
+                        </div>
+                        <span class="badge bg-danger bg-opacity-10 text-danger p-2 border border-danger border-opacity-25"><i class="bi bi-shield-slash fs-4"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-white border p-3 rounded-3 h-100 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="text-secondary small font-monospace text-uppercase">Threat Block Rate</span>
+                            <h2 class="fw-bold my-1 text-warning font-monospace">
+                                {% if stats.total_requests > 0 %}
+                                    {{ "%.1f"|format((stats.blocked_requests / stats.total_requests) * 100) }}%
+                                {% else %}
+                                    0.0%
+                                {% endif %}
+                            </h2>
+                            <small class="text-warning-emphasis">Attack mitigation ratio</small>
+                        </div>
+                        <span class="badge bg-warning bg-opacity-10 text-warning p-2 border border-warning border-opacity-25"><i class="bi bi-pie-chart fs-4"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Threat Breakdown Cards & Chart Simulation -->
+        <div class="row g-4 mb-4">
+            <!-- Attack Vector Distribution -->
+            <div class="col-lg-6">
+                <div class="card bg-white border h-100 shadow-sm rounded-3">
+                    <div class="card-header bg-light border-bottom py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Attack Vector Distribution</h6>
+                        <span class="text-secondary small">Database Records</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span><i class="bi bi-database text-danger me-2"></i>SQL Injection (SQLi)</span>
+                                <span class="fw-bold font-monospace text-danger">{{ stats.attack_distribution["SQL Injection"] }} blocks</span>
+                            </div>
+                            <div class="progress bg-light border" style="height: 10px;">
+                                <div class="progress-bar bg-danger" role="progressbar" 
+                                    style="width: {{ (stats.attack_distribution['SQL Injection'] / (stats.blocked_requests if stats.blocked_requests > 0 else 1)) * 100 }}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span><i class="bi bi-code-slash text-warning me-2"></i>Cross-Site Scripting (XSS)</span>
+                                <span class="fw-bold font-monospace text-warning-emphasis">{{ stats.attack_distribution["Cross-Site Scripting"] }} blocks</span>
+                            </div>
+                            <div class="progress bg-light border" style="height: 10px;">
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                    style="width: {{ (stats.attack_distribution['Cross-Site Scripting'] / (stats.blocked_requests if stats.blocked_requests > 0 else 1)) * 100 }}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span><i class="bi bi-folder-symlink text-info me-2"></i>Path Traversal</span>
+                                <span class="fw-bold font-monospace text-info">{{ stats.attack_distribution["Path Traversal"] }} blocks</span>
+                            </div>
+                            <div class="progress bg-light border" style="height: 10px;">
+                                <div class="progress-bar bg-info" role="progressbar" 
+                                    style="width: {{ (stats.attack_distribution['Path Traversal'] / (stats.blocked_requests if stats.blocked_requests > 0 else 1)) * 100 }}%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span><i class="bi bi-question-circle text-secondary me-2"></i>Other Anomaly / Probing</span>
+                                <span class="fw-bold font-monospace">{{ stats.attack_distribution["Other"] }} blocks</span>
+                            </div>
+                            <div class="progress bg-light border" style="height: 10px;">
+                                <div class="progress-bar bg-secondary" role="progressbar" 
+                                    style="width: {{ (stats.attack_distribution['Other'] / (stats.blocked_requests if stats.blocked_requests > 0 else 1)) * 100 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Severity Distribution -->
+            <div class="col-lg-6">
+                <div class="card bg-white border h-100 shadow-sm rounded-3">
+                    <div class="card-header bg-light border-bottom py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-shield-shaded me-2 text-warning"></i>Threat Severity Categorization</h6>
+                        <span class="text-secondary small">Risk Engine Assessment</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3 text-center">
+                            <div class="col-4">
+                                <div class="border border-danger border-opacity-25 bg-danger bg-opacity-10 p-3 rounded-3">
+                                    <span class="badge bg-danger mb-2 font-monospace">CRITICAL</span>
+                                    <h3 class="fw-bold font-monospace text-danger mb-0">{{ stats.risk_breakdown.get('CRITICAL', 0) }}</h3>
+                                    <small class="text-muted d-none d-sm-block">High damage payloads</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border border-warning border-opacity-25 bg-warning bg-opacity-10 p-3 rounded-3">
+                                    <span class="badge bg-warning text-dark mb-2 font-monospace">HIGH</span>
+                                    <h3 class="fw-bold font-monospace text-warning-emphasis mb-0">{{ stats.risk_breakdown.get('HIGH', 0) }}</h3>
+                                    <small class="text-muted d-none d-sm-block">Exploitative probes</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border border-info border-opacity-25 bg-info bg-opacity-10 p-3 rounded-3">
+                                    <span class="badge bg-info text-dark mb-2 font-monospace">MEDIUM</span>
+                                    <h3 class="fw-bold font-monospace text-info mb-0">{{ stats.risk_breakdown.get('MEDIUM', 0) }}</h3>
+                                    <small class="text-muted d-none d-sm-block">Suspicious inputs</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                            <span class="text-secondary small">Safe traffic passes silently.</span>
+                            <form action="/admin/logs/clear" method="POST" onsubmit="return confirm('Clear all security logs for a clean demonstration?')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash3 me-1"></i> Reset Logs
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+
+
+        {% if active_tab == 'logs' or active_tab == 'overview' or not active_tab %}
+        <!-- =================================================================== -->
+        <!-- SECURITY EVENT LOGS TABLE -->
+        <!-- =================================================================== -->
+        <div class="card bg-white border shadow-sm rounded-3 mb-4">
+            <div class="card-header bg-light border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-receipt-cutoff me-2 text-primary"></i>Live Security Audit Logs</h5>
+                    <span class="badge bg-secondary font-monospace">{{ logs|length }} events</span>
+                </div>
+
+                <!-- Filter Controls -->
+                <form action="/admin/logs" method="GET" class="d-flex align-items-center gap-2">
+                    <select name="attack_type" class="form-select form-select-sm bg-white text-dark border" onchange="this.form.submit()">
+                        <option value="ALL" {{ 'selected' if selected_attack == 'ALL' else '' }}>All Attack Types</option>
+                        <option value="SQL Injection" {{ 'selected' if selected_attack == 'SQL Injection' else '' }}>SQL Injection</option>
+                        <option value="Cross-Site Scripting" {{ 'selected' if selected_attack == 'Cross-Site Scripting' else '' }}>Cross-Site Scripting</option>
+                        <option value="Path Traversal" {{ 'selected' if selected_attack == 'Path Traversal' else '' }}>Path Traversal</option>
+                    </select>
+
+                    <select name="action" class="form-select form-select-sm bg-white text-dark border" onchange="this.form.submit()">
+                        <option value="ALL" {{ 'selected' if selected_action == 'ALL' else '' }}>All Actions</option>
+                        <option value="BLOCKED" {{ 'selected' if selected_action == 'BLOCKED' else '' }}>Blocked Only</option>
+                        <option value="ALLOWED" {{ 'selected' if selected_action == 'ALLOWED' else '' }}>Allowed Only</option>
+                    </select>
+
+                    <a href="/admin/logs" class="btn btn-outline-secondary btn-sm" title="Clear Filters">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </a>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 font-monospace small">
+                    <thead class="border-bottom bg-light text-secondary">
+                        <tr>
+                            <th>#ID</th>
+                            <th>Timestamp</th>
+                            <th>IP Address</th>
+                            <th>Method</th>
+                            <th>Path</th>
+                            <th>Attack Category</th>
+                            <th>Risk</th>
+                            <th>Action</th>
+                            <th>Reason / Rule</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr class="{{ 'table-danger bg-opacity-25' if log.action == 'BLOCKED' else '' }}">
+                            <td class="text-secondary">#{{ log.id }}</td>
+                            <td class="text-secondary">{{ log.timestamp }}</td>
+                            <td><code>{{ log.ip_address }}</code></td>
+                            <td>
+                                <span class="badge bg-light text-dark border">{{ log.method }}</span>
+                            </td>
+                            <td class="text-truncate" style="max-width: 160px;" title="{{ log.path }}">
+                                {{ log.path }}
+                            </td>
+                            <td>
+                                {% if log.attack_type == 'SQL Injection' %}
+                                    <span class="badge bg-danger">SQLi</span>
+                                {% elif log.attack_type == 'Cross-Site Scripting' %}
+                                    <span class="badge bg-warning text-dark">XSS</span>
+                                {% elif log.attack_type == 'Path Traversal' %}
+                                    <span class="badge bg-info text-dark">Path Trav</span>
+                                {% else %}
+                                    <span class="badge bg-light text-secondary border">Clean</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.risk_level == 'CRITICAL' %}
+                                    <span class="text-danger fw-bold">CRIT</span>
+                                {% elif log.risk_level == 'HIGH' %}
+                                    <span class="text-warning-emphasis fw-bold">HIGH</span>
+                                {% elif log.risk_level == 'MEDIUM' %}
+                                    <span class="text-info">MED</span>
+                                {% else %}
+                                    <span class="text-secondary">LOW</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.action == 'BLOCKED' %}
+                                    <span class="badge bg-danger px-2">BLOCKED</span>
+                                {% else %}
+                                    <span class="badge bg-success px-2">ALLOWED</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-truncate" style="max-width: 250px;" title="{{ log.reason }}">
+                                {{ log.reason }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-secondary">
+                                <i class="bi bi-shield-check fs-4 d-block mb-1 text-success"></i>
+                                No logs match the selected filter criteria.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+
+        {% if active_tab == 'rules' %}
+        <!-- =================================================================== -->
+        <!-- TAB 3: RULE MANAGEMENT -->
+        <!-- =================================================================== -->
+        <div class="card bg-white border shadow-sm rounded-3">
+            <div class="card-header bg-light border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-sliders me-2 text-primary"></i>WAF Rule Management &amp; Policy Matrix</h5>
+                    <small class="text-secondary">Toggle individual signatures to demonstrate runtime behavior changes in viva.</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <form action="/admin/rules/reset" method="POST" onsubmit="return confirm('Reset all rules back to system default signatures?')">
+                        <button type="submit" class="btn btn-outline-warning btn-sm">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset to Defaults
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 font-monospace small">
+                    <thead class="border-bottom bg-light text-secondary">
+                        <tr>
+                            <th>Rule ID</th>
+                            <th>Rule Name</th>
+                            <th>Attack Vector</th>
+                            <th>Pattern (Regex)</th>
+                            <th>Risk Level</th>
+                            <th>Enforced Action</th>
+                            <th>Status</th>
+                            <th>Toggle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in rules %}
+                        <tr class="{{ 'opacity-50' if not r.is_enabled else '' }}">
+                            <td class="text-primary fw-bold">{{ r.rule_id }}</td>
+                            <td class="text-dark fw-semibold">{{ r.name }}</td>
+                            <td>
+                                {% if r.attack_type == 'SQL Injection' %}
+                                    <span class="badge bg-danger">SQLi</span>
+                                {% elif r.attack_type == 'Cross-Site Scripting' %}
+                                    <span class="badge bg-warning text-dark">XSS</span>
+                                {% else %}
+                                    <span class="badge bg-info text-dark">Path Trav</span>
+                                {% endif %}
+                            </td>
+                            <td style="max-width: 250px;">
+                                <code class="text-secondary text-break bg-light p-1 rounded border" style="font-size: 0.72rem;">{{ r.pattern }}</code>
+                            </td>
+                            <td>
+                                <span class="badge {{ 'bg-danger' if r.risk_level == 'CRITICAL' else ('bg-warning text-dark' if r.risk_level == 'HIGH' else 'bg-secondary') }}">
+                                    {{ r.risk_level }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-danger">{{ r.action }}</span>
+                            </td>
+                            <td>
+                                {% if r.is_enabled %}
+                                    <span class="badge bg-success">ACTIVE</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">DISABLED</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form action="/admin/rules/toggle/{{ r.rule_id }}" method="POST">
+                                    {% if r.is_enabled %}
+                                        <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" title="Disable Rule">
+                                            Disable
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-success btn-sm py-0 px-2" title="Enable Rule">
+                                            Enable
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if active_tab == 'testing' %}
+        <!-- =================================================================== -->
+        <!-- TAB 4: TESTING INTERFACE -->
+        <!-- =================================================================== -->
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card bg-white border shadow-sm rounded-3 p-4">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-terminal me-2 text-primary"></i>Controlled WAF Testing</h5>
+                    <p class="text-secondary small mb-4">
+                        Send simulated requests through the local WAF inspection engine to verify ALLOW / BLOCK decision logic.
+                    </p>
+
+                    <h6 class="text-secondary small font-monospace text-uppercase mb-2">Preset Test Requests</h6>
+                    <div class="d-grid gap-2 mb-4">
+                        <a href="/search?q=laptop" class="btn btn-outline-success btn-sm text-start font-monospace d-flex justify-content-between align-items-center">
+                            <span>GET /search?q=laptop</span>
+                            <span class="badge bg-success">NORMAL (ALLOW)</span>
+                        </a>
+                        <a href="/search?q=' OR 1=1--" class="btn btn-outline-danger btn-sm text-start font-monospace d-flex justify-content-between align-items-center">
+                            <span>GET /search?q=' OR 1=1--</span>
+                            <span class="badge bg-danger">SQLi (BLOCK)</span>
+                        </a>
+                        <a href="/search?q=' UNION SELECT null, username, password FROM users--" class="btn btn-outline-danger btn-sm text-start font-monospace d-flex justify-content-between align-items-center">
+                            <span>GET /search?q=' UNION SELECT...</span>
+                            <span class="badge bg-danger">SQLi UNION (BLOCK)</span>
+                        </a>
+                        <a href="/search?q=<script>alert('XSS')</script>" class="btn btn-outline-warning btn-sm text-start font-monospace d-flex justify-content-between align-items-center">
+                            <span>GET /search?q=&lt;script&gt;alert('XSS')&lt;/script&gt;</span>
+                            <span class="badge bg-warning text-dark">XSS (BLOCK)</span>
+                        </a>
+                        <a href="/view-file?file=../../etc/passwd" class="btn btn-outline-info btn-sm text-start font-monospace d-flex justify-content-between align-items-center">
+                            <span>GET /view-file?file=../../etc/passwd</span>
+                            <span class="badge bg-info text-dark">PATH TRAVERSAL (BLOCK)</span>
+                        </a>
+                    </div>
+
+                    <h6 class="text-secondary small font-monospace text-uppercase mb-2">Custom Request Inspector</h6>
+                    <form action="/search" method="GET">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-secondary font-monospace small">/search?q=</span>
+                            <input type="text" name="q" class="form-control bg-white text-dark font-monospace small" placeholder="Enter payload string...">
+                            <button type="submit" class="btn btn-primary btn-sm" style="background-color: #0b192c; border-color: #0b192c;">Test</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card bg-white border shadow-sm rounded-3 p-4">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-shield-check me-2 text-success"></i>Evaluation Guidance</h5>
+                    <div class="text-secondary small space-y-3 leading-relaxed">
+                        <p>
+                            <strong>Normal Requests:</strong> Alphanumeric search terms and legitimate file requests pass cleanly through the rule matrix without triggering any signature, returning HTTP 200 OK.
+                        </p>
+                        <p>
+                            <strong>Malicious Requests:</strong> Requests containing recognized SQL syntax (e.g. boolean tautologies, UNION), HTML script injection or event handlers, or parent directory climbing tokens (<code>../</code>) trigger the rule engine and are terminated with an HTTP 403 Forbidden blocked page.
+                        </p>
+                        <p class="mb-0">
+                            <strong>Audit Verification:</strong> Every test generates an entry in the SQLite audit log accessible on the <em>Security Logs</em> tab.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if active_tab == 'settings' %}
+        <!-- =================================================================== -->
+        <!-- TAB 5: SYSTEM SETTINGS -->
+        <!-- =================================================================== -->
+        <div class="card bg-white border shadow-sm rounded-3 p-4">
+            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-gear me-2 text-secondary"></i>WAF Operational Settings</h5>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="p-3 rounded bg-light border space-y-1">
+                        <span class="text-secondary small font-monospace">Operational Mode</span>
+                        <div class="text-dark fw-bold font-monospace">BLOCKING (Enforced Active)</div>
+                        <small class="text-muted">Malicious transactions are halted with HTTP 403.</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 rounded bg-light border space-y-1">
+                        <span class="text-secondary small font-monospace">Persistent Storage</span>
+                        <div class="text-dark fw-bold font-monospace">database/waf_security.db (SQLite)</div>
+                        <small class="text-muted">Local SQLite database stores audit logs and rules.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+                <form action="/admin/rules/reset" method="POST" onsubmit="return confirm('Reset all detection rules back to default signatures?')">
+                    <button type="submit" class="btn btn-outline-warning btn-sm font-monospace">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Rules to Defaults
+                    </button>
+                </form>
+
+                <form action="/admin/logs/clear" method="POST" onsubmit="return confirm('Clear all audit logs?')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm font-monospace">
+                        <i class="bi bi-trash3 me-1"></i> Clear Audit Logs
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Admin Footer -->
+    <footer class="bg-white border-top py-3 text-center text-secondary small mt-auto">
+        <div class="container-fluid px-4 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+            <span>Web Application Firewall Prototype &bull; Academic Minor Project 2026</span>
+            <span class="font-monospace text-success"><i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Real-Time Interception Enabled</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Web Application Firewall (WAF) – Threat Detection System",
+  "description": "Academic Minor Project: Rule-Based Web Application Firewall (WAF) with real-time detection for SQL Injection, XSS, and Path Traversal, request logging, and admin dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
