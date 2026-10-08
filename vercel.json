@@ -1,0 +1,45 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "app": {
+      "root": ".",
+      "framework": "vite"
+    },
+    "waf-backend": {
+      "root": "waf-project",
+      "framework": "flask"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": {
+        "service": "waf-backend"
+      }
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": {
+        "service": "waf-backend"
+      }
+    },
+    {
+      "source": "/admin",
+      "destination": {
+        "service": "waf-backend"
+      }
+    },
+    {
+      "source": "/waf-app/(.*)",
+      "destination": {
+        "service": "waf-backend"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "app"
+      }
+    }
+  ]
+}
